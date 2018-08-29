@@ -73,4 +73,4 @@ Returns information of the songs hosted on the indicated provider.
   ```
 
 ### Nota
-Para realizar un test puede utilizar la herramienta [**Postman**](https://www.getpostman.com/).
+To perform a test you can use the [**Postman**](https://www.getpostman.com/) tool.
