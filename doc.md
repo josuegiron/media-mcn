@@ -23,19 +23,33 @@ Returns information of the songs hosted on the indicated provider.
 
       200 OK
 
-##### Schema
+##### Struct JSON
 
 | Name | Type | Description |
 |---|---|---|
-| Fecha | date | Fecha en que se toma el tipo de cambio del dolar. |
-| Referencia | double | Valor actual del tipo de cambio del dolar. |
+| name | string | Name of the song |
+| artist | string | Artist name of the song |
+| album | string | Album that contains the song |
+| writer | string | songwriter |
+| genre | string | Genre of the song |
+| released | date | Year of recording the song |
+| recorded | date | Record date of the song |
+| length | time | Time in minutes of the duration of the song |
+| track_number | int | Track number on the disc |
 
 ##### Example
 
   ```json
   {
-      "Fecha": "13/08/2018",
-      "Referencia": "7.48156"
+      "name": "Oceans (Where Feet May Fail)",
+      "artist": "Hillsong UNITED",
+      "album": "Zion (Deluxe Edition)",
+      "writer": "Joel Houston, Matt Crocker & Salomon Ligthelm",
+      "genre": "Christian & Gospel",
+      "released": "2013",
+      "recorded": "2012",
+      "length": "8:56",
+      "track_number": 4
   }
   ```
  
@@ -43,7 +57,7 @@ Returns information of the songs hosted on the indicated provider.
 
       404 NOT FOUND
 
-##### Schema
+##### Struct JSON
 
 | Name | Type | Description |
 |---|---|---|
