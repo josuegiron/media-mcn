@@ -55,7 +55,7 @@ Returns information of the songs hosted on the indicated provider.
  
 #### HTTP Status Code
 
-      404 NOT FOUND
+      400 NOT FOUND
 
 ##### Struct JSON
 
@@ -67,8 +67,8 @@ Returns information of the songs hosted on the indicated provider.
 ##### Example
   ```json
   { 
-    "status_messaje" : "No se pudo obtener el valor actual del dolar...",
-    "status_code" : 404
+    "status_messaje" : "The required information could not be obtained...",
+    "status_code" : 400
   }
   ```
 
