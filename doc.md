@@ -3,7 +3,7 @@
 Returns information of the songs hosted on the indicated provider.
 ### Endpoint
 
-  <http://localhost:3006/search/song>
+  <http://localhost:3006/search/song/{provider}/{q}>
      
 ### HTTP Method:
 
@@ -27,21 +27,21 @@ Returns information of the songs hosted on the indicated provider.
 
 | Name | Type | Description |
 |---|---|---|
-| name | string | Name of the song |
+| title | string | Name of the song |
 | artist | string | Artist name of the song |
 | album | string | Album that contains the song |
 | writer | string | songwriter |
 | genre | string | Genre of the song |
-| released | date | Year of recording the song |
-| recorded | date | Record date of the song |
-| length | time | Time in minutes of the duration of the song |
+| released | fieldDataType | Year of recording the song |
+| recorded | fieldDataType | Record date of the song |
+| length | fieldDataType | Time in minutes of the duration of the song |
 | track_number | int | Track number on the disc |
 
 ##### Example
 
   ```json
   {
-      "name": "Oceans (Where Feet May Fail)",
+      "title": "Oceans (Where Feet May Fail)",
       "artist": "Hillsong UNITED",
       "album": "Zion (Deluxe Edition)",
       "writer": "Joel Houston, Matt Crocker & Salomon Ligthelm",
@@ -72,5 +72,5 @@ Returns information of the songs hosted on the indicated provider.
   }
   ```
 
-### Nota
+### Note
 To perform a test you can use the [**Postman**](https://www.getpostman.com/) tool.
