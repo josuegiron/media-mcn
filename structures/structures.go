@@ -6,17 +6,23 @@ type Err struct {
 }
 
 type ResponseSong struct {
-	Songs struct {
-		Title       string `json:"title"`
-		Artist      string `json:"artist"`
-		Album       string `json:"album"`
-		Writer      string `json:"writer"`
-		Genre       string `json:"genre"`
-		Released    string `json:"released"`
-		Recorded    string `json:"recorded"`
-		Length      string `json:"length"`
-		TrackNumber int32  `json:"track_number"`
-	} `json:"songs"`
+	Songs    []Song `json:"songs"`
+	Next     string `json:"next_page"`
+	Previous string `json:"previous_page"`
+	Total    int    `json:"total"`
+}
+
+type Song struct {
+	Title       string `json:"title"`
+	Artist      string `json:"artist"`
+	Album       string `json:"album"`
+	Rank        int    `json:"rank"`
+	Genre       string `json:"genre"`
+	Released    string `json:"released"`
+	Explicit    bool   `json:"explicit"`
+	Length      int    `json:"length_ms"`
+	TrackNumber int    `json:"track_number"`
+	URL         string `json:"url"`
 }
 
 type SpotifyResponse struct {
