@@ -49,7 +49,7 @@ func SpotifyRequest(q string, w http.ResponseWriter) {
 		json.NewEncoder(w).Encode(&err)
 	} else {
 
-		url := "https://api.spotify.com/v1/search?q=" + url.QueryEscape(q) + "&type=track&market=ES&limit=10&offset=1"
+		url := "https://api.spotify.com/v1/search?q=" + url.QueryEscape(q) + "&type=track&market=US&limit=10&offset=1"
 
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("Content-Type", "application/json")

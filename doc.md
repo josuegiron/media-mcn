@@ -61,8 +61,8 @@ Returns information of the songs hosted on the indicated provider.
         }, 
         ...
         ],
-    "next_page": "https://api.spotify.com/v1/search?query=Oceans+Hillsong&type=track&market=ES&offset=11&limit=10",
-    "previous_page": "https://api.spotify.com/v1/search?query=Oceans+Hillsong&type=track&market=ES&offset=0&limit=10",
+    "next_page": "https://api.spotify.com/v1/...",
+    "previous_page": "https://api.spotify.com/v1/...",
     "total": 31
 }
   ```
