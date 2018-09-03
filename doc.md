@@ -27,30 +27,44 @@ Returns information of the songs hosted on the indicated provider.
 
 | Name | Type | Description |
 |---|---|---|
-| title | string | Name of the song |
-| artist | string | Artist name of the song |
-| album | string | Album that contains the song |
-| writer | string | songwriter |
-| genre | string | Genre of the song |
-| released | fieldDataType | Year of recording the song |
-| recorded | fieldDataType | Record date of the song |
-| length | fieldDataType | Time in minutes of the duration of the song |
-| track_number | int | Track number on the disc |
+| songs | Array | Contains an arrangement of songs |
+| songs.title | string | Name of the song |
+| songs.artist | string | Artist name of the song |
+| songs.album | string | Album that contains the song |
+| songs.rank | string | Position of the song in the provider |
+| songs.genre | string | Genre of the song |
+| songs.released | fieldDataType | Date of recording the song |
+| songs.explicit | bool | Record date of the song |
+| songs.length_ms | fieldDataType | Time in milliseconds of the duration of the song |
+| songs.track_number | int | Track number on the disc |
+| songs.url | string | URL of the track file |
+| next_page | string | Following results |
+| previous_page | string | Previous results |
+| total | int | Total results found |
 
 ##### Example
 
   ```json
   {
-      "title": "Oceans (Where Feet May Fail)",
-      "artist": "Hillsong UNITED",
-      "album": "Zion (Deluxe Edition)",
-      "writer": "Joel Houston, Matt Crocker & Salomon Ligthelm",
-      "genre": "Christian & Gospel",
-      "released": "2013",
-      "recorded": "2012",
-      "length": "8:56",
-      "track_number": 4
-  }
+    "songs": [
+        {
+            "title": "Oceans (Where Feet May Fail) [Live at Red Rocks] - Live at Red Rocks",
+            "artist": "Hillsong United",
+            "album": "Oceans EP",
+            "rank": 53,
+            "genre": "",
+            "released": "2013-10-10",
+            "explicit": false,
+            "length_ms": 589200,
+            "track_number": 4,
+            "url": "https://open.spotify.com/track/7IDiC6vVdVWMIwQPpf4SWi"
+        }, 
+        ...
+        ],
+    "next_page": "https://api.spotify.com/v1/search?query=Oceans+Hillsong&type=track&market=ES&offset=11&limit=10",
+    "previous_page": "https://api.spotify.com/v1/search?query=Oceans+Hillsong&type=track&market=ES&offset=0&limit=10",
+    "total": 31
+}
   ```
  
 #### HTTP Status Code
@@ -72,5 +86,23 @@ Returns information of the songs hosted on the indicated provider.
   }
   ```
 
+#### HTTP Status Code
+
+      200 OK
+
+##### Struct JSON
+
+| Name | Type | Description |
+|---|---|---|
+| status_message | string | The song was not found |
+| status_code | int | HTTP Status Code |
+
+##### Example
+  ```json
+  { 
+    "status_messaje" : "The song was not found...",
+    "status_code" : 200
+  }
+  ```
 ### Note
 To perform a test you can use the [**Postman**](https://www.getpostman.com/) tool.
