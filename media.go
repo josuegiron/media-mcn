@@ -1,27 +1,37 @@
 package main
 
 import (
-	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
+	"net/url"
+	"os"
+	"strings"
 
 	"./structures"
-
 	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
 )
 
+var c structures.Credentials
+
 func main() {
+
+	file, err := ioutil.ReadFile("./creds.json")
+	if err != nil {
+		fmt.Printf("File error: %v\n", err)
+		os.Exit(1)
+	}
+	json.Unmarshal(file, &c)
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/search/song", Media).Methods("GET")
 	log.Fatal(http.ListenAndServe(":3006", router))
 }
 
 func Media(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "application/json")
 	err := structures.Err{Code: 400, Messaje: "The required information could not be obtained..."}
 
@@ -34,7 +44,7 @@ func Media(w http.ResponseWriter, r *http.Request) {
 	} else {
 		switch provider {
 		case "spotify":
-			SpotifyRequest(q, w)
+			SpotifyRequest(q, r, w)
 		case "deezer":
 			DeezerRequest(q, w)
 		default:
@@ -44,52 +54,35 @@ func Media(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SpotifyRequest(q string, w http.ResponseWriter) {
+func SpotifyRequest(q string, r *http.Request, w http.ResponseWriter) {
 
-	ctx := context.Background()
+	body := url.Values{"grant_type": {"client_credentials"}}
 
-	conf := &oauth2.Config{
-		ClientID:     "fea07c92beaf4a0ba83d42243461c997",
-		ClientSecret: "0c2da7d6085f4ddba9819ffa3ddfe726",
-		Scopes:       []string{"user-library-read"},
-		Endpoint: oauth2.Endpoint{
-			TokenURL: "https://accounts.spotify.com/api/token",
-			AuthURL:  "https://accounts.spotify.com/authorize",
-		},
+	var urlAuth = "https://accounts.spotify.com/api/token"
+
+	reqToken, er := http.NewRequest("POST", urlAuth, strings.NewReader(body.Encode()))
+
+	cidcs := []byte(c.ClientId + ":" + c.ClientSecret)
+	secret := base64.StdEncoding.EncodeToString(cidcs)
+	basicAuth := "Basic " + secret
+	reqToken.Header.Add("Authorization", basicAuth)
+	reqToken.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	clientToken := &http.Client{}
+	resToken, er := clientToken.Do(reqToken)
+	if er != nil {
+		panic(er)
 	}
+	defer resToken.Body.Close()
 
-	// Redirect user to consent page to ask for permission
-	// for the scopes specified above.
-	//url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
-	//fmt.Printf("Visit the URL for the auth dialog: %v", url)
+	var token structures.Token
+	json.NewDecoder(resToken.Body).Decode(&token)
 
-	// Use the authorization code that is pushed to the redirect
-	// URL. Exchange will do the handshake to retrieve the
-	// initial access token. The HTTP Client returned by
-	// conf.Client will refresh the token as necessary.
-	var code string
-	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatal(err)
-	}
+	url := "https://api.spotify.com/v1/search?q=" + url.QueryEscape(q) + "&type=track&market=ES&limit=10&offset=1"
 
-	// Use the custom HTTP client when requesting a token.
-	httpClient := &http.Client{Timeout: 2 * time.Second}
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
-
-	tok, err := conf.Exchange(ctx, code)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := conf.Client(ctx, tok)
-	resss, _ := client.Get("https://api.spotify.com/v1/search?q=Oceans Hillsong&type=track&market=ES&limit=10&offset=11")
-	log.Println(resss)
-
-	url2 := "https://api.spotify.com/v1/search?q=" + q + "&type=track&market=ES&limit=10&offset=1"
-
-	req, err := http.NewRequest("GET", url2, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer BQBPgazQ9K_rsiyGf4lM83z8ZTGgRMJq2JBXGVRzPlrckdzQqxruU_oPT-h93Nu4Wg_ANXuAF-hVuk4hm_RAphsMwa39SbFiEIN3iiS1ODI-Iflg-fRy7Pruln89UCLL81pgXAH8MX1yDLLnTPdVHl50_6FZOIUT8g")
+	req.Header.Set("Authorization", "Bearer "+token.AccesToken)
 	client2 := &http.Client{}
 	resp, err := client2.Do(req)
 	if err != nil {

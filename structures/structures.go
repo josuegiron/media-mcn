@@ -5,6 +5,19 @@ type Err struct {
 	Code    int    `json:"status_code"`
 }
 
+type Credentials struct {
+	ClientId     string `json:"clientId"`
+	ClientSecret string `json:"client_secret"`
+	RedirectURL  string `json:"redirect_url"`
+}
+
+type Token struct {
+	AccesToken string `json:"access_token"`
+	TokenType  string `json:"token_type"`
+	ExpiresIn  string `json:"expires_in"`
+	Scope      string `json:"scope"`
+}
+
 type ResponseSong struct {
 	Songs    []Song `json:"songs"`
 	Next     string `json:"next_page"`
