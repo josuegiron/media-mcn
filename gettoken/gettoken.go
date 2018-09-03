@@ -1,31 +1,19 @@
 package main
 
 import (
-	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"time"
 
-	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/spotify"
+	"github.com/mediocregopher/radix.v2/redis"
 )
-
-func main() {
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/auth", SetToken).Methods("GET")
-	log.Fatal(http.ListenAndServe(":3010", router))
-}
-
-func SetToken(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Printf("holi si funciona")
-	log.Println(r.URL.Query().Get("code"))
-
-}
 
 type Credentials struct {
 	ClientId     string `json:"clientId"`
@@ -33,14 +21,17 @@ type Credentials struct {
 	RedirectURL  string `json:"redirect_url"`
 }
 
-var (
-	conf *oauth2.Config
-	ctx  context.Context
-)
+type Token struct {
+	AccesToken string `json:"access_token"`
+	TokenType  string `json:"token_type"`
+	ExpiresIn  int    `json:"expires_in"`
+	Scope      string `json:"scope"`
+}
+
 var c Credentials
+var token Token
 
-func Init() {
-
+func main() {
 	file, err := ioutil.ReadFile("./creds.json")
 	if err != nil {
 		fmt.Printf("File error: %v\n", err)
@@ -48,17 +39,54 @@ func Init() {
 	}
 	json.Unmarshal(file, &c)
 
-	ctx = context.Background()
-	conf = &oauth2.Config{
-		ClientID:     c.ClientId,
-		ClientSecret: c.ClientSecret,
-		Scopes:       []string{""},
-		Endpoint:     spotify.Endpoint,
-		RedirectURL:  c.RedirectURL,
+	for {
+		GetTokenToSpotify()
+		time.Sleep(3599 * time.Second)
 	}
+}
 
-	url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
-	fmt.Printf("Visit the URL for the auth dialog: %v", url)
-	// Handle the exchange code to initiate a transport.
+func GetTokenToSpotify() {
 
+	body := url.Values{"grant_type": {"client_credentials"}}
+	urlAuth := "https://accounts.spotify.com/api/token"
+	credentials := []byte(c.ClientId + ":" + c.ClientSecret)
+	credentialsEncode := base64.StdEncoding.EncodeToString(credentials)
+	basicAuth := "Basic " + credentialsEncode
+
+	reqToken, er := http.NewRequest("POST", urlAuth, strings.NewReader(body.Encode()))
+	reqToken.Header.Add("Authorization", basicAuth)
+	reqToken.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	clientToken := &http.Client{}
+	resToken, er := clientToken.Do(reqToken)
+	if er != nil {
+		log.Println(er)
+	}
+	defer resToken.Body.Close()
+	log.Println(resToken.StatusCode)
+
+	json.NewDecoder(resToken.Body).Decode(&token)
+
+	log.Println("Token: ", token.AccesToken)
+
+	SetTokenToCache()
+}
+
+func SetTokenToCache() {
+
+	conn, err := redis.Dial("tcp", "localhost:6379")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	err = conn.Cmd("HMSET", "Token", "access_token", token.AccesToken, "token_type", token.TokenType, "scope", token.Scope, "expire_in", token.ExpiresIn).Err
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = conn.Cmd("EXPIRE", "Token", token.ExpiresIn).Err
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Actualiza token en cache en redis...")
 }
