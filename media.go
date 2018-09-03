@@ -11,10 +11,7 @@ import (
 	"github.com/mediocregopher/radix.v2/redis"
 )
 
-var c structures.Credentials
-
 func main() {
-
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/search/song", Media).Methods("GET")
 	log.Fatal(http.ListenAndServe(":3006", router))
@@ -33,7 +30,7 @@ func Media(w http.ResponseWriter, r *http.Request) {
 	} else {
 		switch provider {
 		case "spotify":
-			SpotifyRequest(q, r, w)
+			SpotifyRequest(q, w)
 		case "deezer":
 			DeezerRequest(q, w)
 		default:
@@ -43,7 +40,8 @@ func Media(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SpotifyRequest(q string, r *http.Request, w http.ResponseWriter) {
+func SpotifyRequest(q string, w http.ResponseWriter) {
+
 	token, err := GetTokenToCache()
 	if err != nil {
 		err := structures.Err{Code: 200, Messaje: "The song was not found..."}
@@ -103,11 +101,55 @@ func SpotifyRequest(q string, r *http.Request, w http.ResponseWriter) {
 	}
 
 }
+
 func DeezerRequest(q string, w http.ResponseWriter) {
-	deezer := map[string]string{"message": "Esta es la respuesta de la informacion de Deezer...", "q": q}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(deezer)
+	url := "https://api.deezer.com/search/track?q=" + url.QueryEscape(q)
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	client2 := &http.Client{}
+	resp, err := client2.Do(req)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	var deezer structures.DeezerResponse
+	if err := json.NewDecoder(resp.Body).Decode(&deezer); err != nil {
+		log.Println("Error en decodificar JSON: ", err)
+	} else {
+		total := len(deezer.Data)
+		if total > 0 {
+			var response structures.ResponseSong
+			for i := 0; i < total; i++ {
+				var song structures.Song
+				song.Title = deezer.Data[i].Title
+				song.Album = deezer.Data[i].Album.Title
+				song.Artist = deezer.Data[i].Artist.Name
+				song.Rank = deezer.Data[i].Rank
+				song.Explicit = deezer.Data[i].ExplicitLyrics
+				song.Length = deezer.Data[i].Duration * 1000
+				song.URL = deezer.Data[i].Link
+				song.TrackNumber = i
+
+				response.Songs = append(response.Songs, song)
+			}
+			response.Next = deezer.Next
+			response.Total = deezer.Total
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(&response)
+		} else {
+			err := structures.Err{Code: 200, Messaje: "The song was not found..."}
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(&err)
+		}
+
+	}
 }
+
+//	Recoge el token de la base de datos en cache.
 
 func GetTokenToCache() (string, error) {
 	conn, err := redis.Dial("tcp", "localhost:6379")

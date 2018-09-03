@@ -5,19 +5,6 @@ type Err struct {
 	Code    int    `json:"status_code"`
 }
 
-type Credentials struct {
-	ClientId     string `json:"clientId"`
-	ClientSecret string `json:"client_secret"`
-	RedirectURL  string `json:"redirect_url"`
-}
-
-type Token struct {
-	AccesToken string `json:"access_token"`
-	TokenType  string `json:"token_type"`
-	ExpiresIn  int    `json:"expires_in"`
-	Scope      string `json:"scope"`
-}
-
 type ResponseSong struct {
 	Songs    []Song `json:"songs"`
 	Next     string `json:"next_page"`
@@ -107,4 +94,45 @@ type SpotifyResponse struct {
 		Previous string `json:"previous"`
 		Total    int    `json:"total"`
 	} `json:"tracks"`
+}
+
+type DeezerResponse struct {
+	Data []struct {
+		ID             int    `json:"id"`
+		Readable       bool   `json:"readable"`
+		Title          string `json:"title"`
+		TitleShort     string `json:"title_short"`
+		TitleVersion   string `json:"title_version"`
+		Link           string `json:"link"`
+		Duration       int    `json:"duration"`
+		Rank           int    `json:"rank"`
+		ExplicitLyrics bool   `json:"explicit_lyrics"`
+		Preview        string `json:"preview"`
+		Artist         struct {
+			ID            int    `json:"id"`
+			Name          string `json:"name"`
+			Link          string `json:"link"`
+			Picture       string `json:"picture"`
+			PictureSmall  string `json:"picture_small"`
+			PictureMedium string `json:"picture_medium"`
+			PictureBig    string `json:"picture_big"`
+			PictureXl     string `json:"picture_xl"`
+			Tracklist     string `json:"tracklist"`
+			Type          string `json:"type"`
+		} `json:"artist"`
+		Album struct {
+			ID          int    `json:"id"`
+			Title       string `json:"title"`
+			Cover       string `json:"cover"`
+			CoverSmall  string `json:"cover_small"`
+			CoverMedium string `json:"cover_medium"`
+			CoverBig    string `json:"cover_big"`
+			CoverXl     string `json:"cover_xl"`
+			Tracklist   string `json:"tracklist"`
+			Type        string `json:"type"`
+		} `json:"album"`
+		Type string `json:"type"`
+	} `json:"data"`
+	Total int    `json:"total"`
+	Next  string `json:"next"`
 }
